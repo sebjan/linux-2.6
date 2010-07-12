@@ -34,6 +34,7 @@
 
 static struct workqueue_struct *mboxd;
 static struct omap_mbox **mboxes;
+static DEFINE_MUTEX(mboxes_lock);
 
 static int mbox_configured;
 static DEFINE_MUTEX(mbox_configured_lock);
@@ -328,6 +329,7 @@ struct omap_mbox *omap_mbox_get(const char *name, struct notifier_block *nb)
 	if (!mboxes)
 		return ERR_PTR(-EINVAL);
 
+	mutex_lock(&mboxes_lock);
 	for (i = 0; (_mbox = mboxes[i]); i++) {
 		if (!strcmp(_mbox->name, name)) {
 			mbox = _mbox;
@@ -335,8 +337,11 @@ struct omap_mbox *omap_mbox_get(const char *name, struct notifier_block *nb)
 		}
 	}
 
-	if (!mbox)
+	if (!mbox) {
+		mutex_unlock(&mboxes_lock);
 		return ERR_PTR(-ENOENT);
+	}
+	mutex_unlock(&mboxes_lock);
 
 	ret = omap_mbox_startup(mbox);
 	if (ret)
@@ -366,6 +371,7 @@ int omap_mbox_register(struct device *parent, struct omap_mbox **list)
 	mboxes = list;
 	if (!mboxes)
 		return -EINVAL;
+	mutex_lock(&mboxes_lock);
 
 	for (i = 0; mboxes[i]; i++) {
 		struct omap_mbox *mbox = mboxes[i];
@@ -378,11 +384,13 @@ int omap_mbox_register(struct device *parent, struct omap_mbox **list)
 
 		BLOCKING_INIT_NOTIFIER_HEAD(&mbox->notifier);
 	}
+	mutex_unlock(&mboxes_lock);
 	return 0;
 
 err_out:
 	while (i--)
 		device_unregister(mboxes[i]->dev);
+	mutex_unlock(&mboxes_lock);
 	return ret;
 }
 EXPORT_SYMBOL(omap_mbox_register);
@@ -394,9 +402,11 @@ int omap_mbox_unregister(void)
 	if (!mboxes)
 		return -EINVAL;
 
+	mutex_lock(&mboxes_lock);
 	for (i = 0; mboxes[i]; i++)
 		device_unregister(mboxes[i]->dev);
 	mboxes = NULL;
+	mutex_unlock(&mboxes_lock);
 	return 0;
 }
 EXPORT_SYMBOL(omap_mbox_unregister);
