@@ -826,6 +826,88 @@ static inline void omap2_mmc_mux(struct omap_mmc_platform_data *mmc_controller,
 		 * For MMC3 the pins need to be muxed in the board-*.c files
 		 */
 	}
+	if (cpu_is_omap44xx()) {
+		switch (controller_nr) {
+		case 0:
+		/* MMC 1 */
+			omap_mux_init_signal("sdmmc1_clk.sdmmc1_clk",
+				OMAP_PIN_INPUT_PULLUP);
+			omap_mux_init_signal("sdmmc1_cmd.sdmmc1_cmd",
+				OMAP_PIN_INPUT_PULLUP);
+			omap_mux_init_signal("sdmmc1_dat0.sdmmc1_dat0",
+				OMAP_PIN_INPUT_PULLUP);
+			if (mmc_controller->slots[0].caps &
+				(MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA)) {
+				omap_mux_init_signal("sdmmc1_dat1.sdmmc1_dat1",
+					OMAP_PIN_INPUT_PULLUP);
+				omap_mux_init_signal("sdmmc1_dat2.sdmmc1_dat2",
+					OMAP_PIN_INPUT_PULLUP);
+				omap_mux_init_signal("sdmmc1_dat3.sdmmc1_dat3",
+					OMAP_PIN_INPUT_PULLUP);
+			}
+			if (mmc_controller->slots[0].caps &
+				MMC_CAP_8_BIT_DATA) {
+				omap_mux_init_signal("sdmmc1_dat4.sdmmc1_dat4",
+					OMAP_PIN_INPUT_PULLUP);
+				omap_mux_init_signal("sdmmc1_dat5.sdmmc1_dat5",
+					OMAP_PIN_INPUT_PULLUP);
+				omap_mux_init_signal("sdmmc1_dat6.sdmmc1_dat6",
+					OMAP_PIN_INPUT_PULLUP);
+				omap_mux_init_signal("sdmmc1_dat7.sdmmc1_dat7",
+					OMAP_PIN_INPUT_PULLUP);
+			}
+			break;
+		case 1:
+		/* MMC2 */
+			omap_mux_init_signal("gpmc_noe.sdmmc2_clk",
+				OMAP_PIN_INPUT_PULLUP);
+			omap_mux_init_signal("gpmc_nwe.sdmmc2_cmd",
+				OMAP_PIN_INPUT_PULLUP);
+			omap_mux_init_signal("gpmc_ad0.sdmmc2_dat0",
+				OMAP_PIN_INPUT_PULLUP);
+			if (mmc_controller->slots[0].caps &
+				(MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA)) {
+				omap_mux_init_signal("gpmc_ad1.sdmmc2_dat1",
+					OMAP_PIN_INPUT_PULLUP);
+				omap_mux_init_signal("gpmc_ad2.sdmmc2_dat2",
+					OMAP_PIN_INPUT_PULLUP);
+				omap_mux_init_signal("gpmc_ad3.sdmmc2_dat3",
+					OMAP_PIN_INPUT_PULLUP);
+			}
+			if (mmc_controller->slots[0].caps &
+				MMC_CAP_8_BIT_DATA) {
+				omap_mux_init_signal("gpmc_ad4.sdmmc2_dat4",
+					OMAP_PIN_INPUT_PULLUP);
+				omap_mux_init_signal("gpmc_ad5.sdmmc2_dat5",
+					OMAP_PIN_INPUT_PULLUP);
+				omap_mux_init_signal("gpmc_ad6.sdmmc2_dat6",
+					OMAP_PIN_INPUT_PULLUP);
+				omap_mux_init_signal("gpmc_ad7.sdmmc2_dat7",
+					OMAP_PIN_INPUT_PULLUP);
+			}
+			break;
+		case 4:
+		/* MMC5 only for omap4 */
+			omap_mux_init_signal("sdmmc5_clk.sdmmc5_clk",
+				OMAP_PIN_INPUT_PULLUP);
+			omap_mux_init_signal("sdmmc5_cmd.sdmmc5_cmd",
+				OMAP_PIN_INPUT_PULLUP);
+			omap_mux_init_signal("sdmmc5_dat0.sdmmc5_dat0",
+				OMAP_PIN_INPUT_PULLUP);
+			if (mmc_controller->slots[0].caps &
+				MMC_CAP_4_BIT_DATA) {
+				omap_mux_init_signal("sdmmc5_dat1.sdmmc5_dat1",
+					OMAP_PIN_INPUT_PULLUP);
+				omap_mux_init_signal("sdmmc5_dat2.sdmmc5_dat2",
+					OMAP_PIN_INPUT_PULLUP);
+				omap_mux_init_signal("sdmmc5_dat3.sdmmc5_dat3",
+					OMAP_PIN_INPUT_PULLUP);
+			}
+			break;
+		default:
+			break;
+		}
+	}
 }
 
 void __init omap2_init_mmc(struct omap_mmc_platform_data **mmc_data,
