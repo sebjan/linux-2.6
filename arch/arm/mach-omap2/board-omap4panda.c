@@ -404,6 +404,7 @@ static void __init omap4_panda_init(void)
 	if (omap_rev() == OMAP4430_REV_ES1_0)
 		package = OMAP_PACKAGE_CBL;
 	omap4_mux_init(board_mux, package);
+	omap_mux_init_signal("gpmc_a19.gpio_43", OMAP_PIN_OUTPUT);
 
 	omap4_panda_i2c_init();
 	platform_add_devices(panda_devices, ARRAY_SIZE(panda_devices));

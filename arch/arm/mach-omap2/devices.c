@@ -888,7 +888,8 @@ static inline void omap2_mmc_mux(struct omap_mmc_platform_data *mmc_controller,
 			break;
 		case 4:
 		/* MMC5 only for omap4 */
-			omap_mux_init_signal("sdmmc5_clk.sdmmc5_clk",
+		/* These need to set in board*.c file So we have commented them*/
+/*			omap_mux_init_signal("sdmmc5_clk.sdmmc5_clk",
 				OMAP_PIN_INPUT_PULLUP);
 			omap_mux_init_signal("sdmmc5_cmd.sdmmc5_cmd",
 				OMAP_PIN_INPUT_PULLUP);
@@ -902,7 +903,7 @@ static inline void omap2_mmc_mux(struct omap_mmc_platform_data *mmc_controller,
 					OMAP_PIN_INPUT_PULLUP);
 				omap_mux_init_signal("sdmmc5_dat3.sdmmc5_dat3",
 					OMAP_PIN_INPUT_PULLUP);
-			}
+			}*/
 			break;
 		default:
 			break;
