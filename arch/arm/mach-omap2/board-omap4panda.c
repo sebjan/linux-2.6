@@ -26,6 +26,8 @@
 #include <linux/usb/otg.h>
 #include <linux/i2c/twl.h>
 #include <linux/regulator/machine.h>
+#include <linux/regulator/fixed.h>
+#include <linux/wl12xx.h>
 
 #include <mach/hardware.h>
 #include <mach/omap4-common.h>
@@ -45,6 +47,8 @@
 
 #define GPIO_HUB_POWER		1
 #define GPIO_HUB_NRESET		62
+#define OMAP_PANDA_WLAN_PMENA_GPIO (43)
+#define OMAP_PANDA_WLAN_IRQ_GPIO	(53)
 
 static struct gpio_led gpio_leds[] = {
 	{
@@ -162,6 +166,15 @@ static struct omap2_hsmmc_info mmc[] = {
 		.gpio_wp	= -EINVAL,
 		.gpio_cd	= -EINVAL,
 	},
+	{
+		.name           = "wl1271",
+		.mmc            = 5,
+		.caps		= MMC_CAP_4_BIT_DATA | MMC_CAP_POWER_OFF_CARD,
+		.gpio_wp        = -EINVAL,
+		.gpio_cd        = -EINVAL,
+		.ocr_mask       = MMC_VDD_165_195,
+		.nonremovable   = true,
+	},
 	{}	/* Terminator */
 };
 
@@ -170,6 +183,43 @@ static struct regulator_consumer_supply omap4_panda_vmmc_supply[] = {
 		.supply = "vmmc",
 		.dev_name = "mmci-omap-hs.0",
 	},
+};
+
+static struct regulator_consumer_supply omap4_panda_vmmc5_supply = {
+	.supply = "vmmc",
+	.dev_name = "mmci-omap-hs.4",
+};
+
+static struct regulator_init_data panda_vmmc5 = {
+	.constraints = {
+	.valid_ops_mask = REGULATOR_CHANGE_STATUS,
+	},
+	.num_consumer_supplies = 1,
+	.consumer_supplies = &omap4_panda_vmmc5_supply,
+};
+
+static struct fixed_voltage_config panda_vwlan = {
+	.supply_name = "vwl1271",
+	.microvolts = 1800000, /* 1.8V */
+	.gpio = OMAP_PANDA_WLAN_PMENA_GPIO,
+	.startup_delay = 70000, /* 70msec */
+	.enable_high = 1,
+	.enabled_at_boot = 0,
+	.init_data = &panda_vmmc5,
+};
+
+static struct platform_device omap_vwlan_device = {
+	.name       = "reg-fixed-voltage",
+	.id     = 1,
+	.dev = {
+		.platform_data = &panda_vwlan,
+	},
+};
+
+struct wl12xx_platform_data omap_panda_wlan_data = {
+	.irq = OMAP_GPIO_IRQ(OMAP_PANDA_WLAN_IRQ_GPIO),
+	/* PANDA ref clock is 38.4 MHz */
+	.board_ref_clock = 2,
 };
 
 static int omap4_twl6030_hsmmc_late_init(struct device *dev)
@@ -414,6 +464,10 @@ static void __init omap4_panda_init(void)
 	usb_nop_xceiv_register();
 	omap4_ehci_init();
 	usb_musb_init(&musb_board_data);
+	if (wl12xx_set_platform_data(&omap_panda_wlan_data))
+		pr_err("%s: error setting wl12xx data\n", __func__);
+	else
+		platform_device_register(&omap_vwlan_device);
 }
 
 static void __init omap4_panda_map_io(void)
