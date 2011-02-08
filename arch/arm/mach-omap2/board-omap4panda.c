@@ -35,8 +35,12 @@
 
 #include <plat/board.h>
 #include <plat/common.h>
+#include <plat/display.h>
+#include <plat/omap_device.h>
+#include <plat/omap_hwmod.h>
 #include <plat/usb.h>
 #include <plat/mmc.h>
+#include <plat/panel-generic-dpi.h>
 #include "timer-gp.h"
 
 #include "hsmmc.h"
@@ -74,6 +78,61 @@ static struct platform_device leds_gpio = {
 
 static struct platform_device *panda_devices[] __initdata = {
 	&leds_gpio,
+};
+
+/* Display DVI */
+#define PANDA_DVI_TFP410_POWER_DOWN_GPIO	0
+
+static int panda_enable_dvi(struct omap_dss_device *dssdev)
+{
+	gpio_set_value(dssdev->reset_gpio, 1);
+	return 0;
+}
+
+static void panda_disable_dvi(struct omap_dss_device *dssdev)
+{
+	gpio_set_value(dssdev->reset_gpio, 0);
+}
+
+/* Using generic display panel */
+static struct panel_generic_dpi_data dvi_panel = {
+	.name			= "generic",
+	.platform_enable	= panda_enable_dvi,
+	.platform_disable	= panda_disable_dvi,
+};
+
+struct omap_dss_device panda_dvi_device = {
+	.type			= OMAP_DISPLAY_TYPE_DPI,
+	.name			= "dvi",
+	.driver_name		= "generic_dpi_panel",
+	.data			= &dvi_panel,
+	.phy.dpi.data_lines	= 24,
+	.reset_gpio		= PANDA_DVI_TFP410_POWER_DOWN_GPIO,
+	.channel		= OMAP_DSS_CHANNEL_LCD2,
+};
+
+void __init panda_dvi_init(void)
+{
+	int r = 0;
+
+	r = gpio_request(panda_dvi_device.reset_gpio, "DVI PD");
+	if (r) {
+		pr_err("Failed to get DVI powerdown GPIO\n");
+		return;
+	}
+
+	/* Disabling TFP410 DVI chip, at bootup */
+	gpio_set_value(panda_dvi_device.reset_gpio, 0);
+}
+
+static struct omap_dss_device *panda_dss_devices[] = {
+	&panda_dvi_device,
+};
+
+static struct omap_dss_board_info panda_dss_data = {
+	.num_devices	= ARRAY_SIZE(panda_dss_devices),
+	.devices	= panda_dss_devices,
+	.default_device	= &panda_dvi_device,
 };
 
 static void __init omap4_panda_init_irq(void)
@@ -391,6 +450,64 @@ static int __init omap4_panda_i2c_init(void)
 
 #ifdef CONFIG_OMAP_MUX
 static struct omap_board_mux board_mux[] __initdata = {
+/* gpio 0 - TFP410 PD */
+	OMAP4_MUX(KPD_COL1, OMAP_PIN_OUTPUT | OMAP_MUX_MODE3),
+/* dispc2_data23 */
+	OMAP4_MUX(USBB2_ULPITLL_STP, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_data22 */
+	OMAP4_MUX(USBB2_ULPITLL_DIR, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_data21 */
+	OMAP4_MUX(USBB2_ULPITLL_NXT, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_data20 */
+	OMAP4_MUX(USBB2_ULPITLL_DAT0, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_data19 */
+	OMAP4_MUX(USBB2_ULPITLL_DAT1, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_data18 */
+	OMAP4_MUX(USBB2_ULPITLL_DAT2, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_data15 */
+	OMAP4_MUX(USBB2_ULPITLL_DAT3, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_data14 */
+	OMAP4_MUX(USBB2_ULPITLL_DAT4, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_data13 */
+	OMAP4_MUX(USBB2_ULPITLL_DAT5, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_data12 */
+	OMAP4_MUX(USBB2_ULPITLL_DAT6, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_data11 */
+	OMAP4_MUX(USBB2_ULPITLL_DAT7, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_data10 */
+	OMAP4_MUX(DPM_EMU3, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_data9 */
+	OMAP4_MUX(DPM_EMU4, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_data16 */
+	OMAP4_MUX(DPM_EMU5, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_data17 */
+	OMAP4_MUX(DPM_EMU6, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_hsync */
+	OMAP4_MUX(DPM_EMU7, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_pclk */
+	OMAP4_MUX(DPM_EMU8, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_vsync */
+	OMAP4_MUX(DPM_EMU9, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_de */
+	OMAP4_MUX(DPM_EMU10, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_data8 */
+	OMAP4_MUX(DPM_EMU11, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_data7 */
+	OMAP4_MUX(DPM_EMU12, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_data6 */
+	OMAP4_MUX(DPM_EMU13, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_data5 */
+	OMAP4_MUX(DPM_EMU14, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_data4 */
+	OMAP4_MUX(DPM_EMU15, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_data3 */
+	OMAP4_MUX(DPM_EMU16, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_data2 */
+	OMAP4_MUX(DPM_EMU17, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_data1 */
+	OMAP4_MUX(DPM_EMU18, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
+/* dispc2_data0 */
+	OMAP4_MUX(DPM_EMU19, OMAP_PIN_OUTPUT | OMAP_MUX_MODE5),
 	{ .reg_offset = OMAP_MUX_TERMINATOR },
 };
 #else
@@ -413,6 +530,10 @@ static void __init omap4_panda_init(void)
 	usb_nop_xceiv_register();
 	omap4_ehci_init();
 	usb_musb_init(&musb_board_data);
+
+	/* Enabling DVI Display */
+	panda_dvi_init();
+	omap_display_init(&panda_dss_data);
 }
 
 static void __init omap4_panda_map_io(void)
