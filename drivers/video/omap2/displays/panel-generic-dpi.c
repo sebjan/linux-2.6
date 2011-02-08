@@ -60,18 +60,18 @@ static struct panel_config generic_dpi_panels[] = {
 	/* Generic Panel */
 	{
 		{
-			.x_res		= 640,
-			.y_res		= 480,
+			.x_res		= 1024,
+			.y_res		= 768,
 
-			.pixel_clock	= 23500,
+			.pixel_clock	= 65000,
 
-			.hfp		= 48,
-			.hsw		= 32,
-			.hbp		= 80,
+			.hfp		= 136,
+			.hsw		= 24,
+			.hbp		= 160,
 
-			.vfp		= 3,
-			.vsw		= 4,
-			.vbp		= 7,
+			.vfp		= 6,
+			.vsw		= 3,
+			.vbp		= 29,
 		},
 		.acbi			= 0x0,
 		.acb			= 0x0,
