@@ -115,7 +115,8 @@ void __init panda_dvi_init(void)
 {
 	int r = 0;
 
-	r = gpio_request(panda_dvi_device.reset_gpio, "DVI PD");
+	r = gpio_request_one(panda_dvi_device.reset_gpio,
+						GPIOF_OUT_INIT_LOW, "DVI PD");
 	if (r) {
 		pr_err("Failed to get DVI powerdown GPIO\n");
 		return;
