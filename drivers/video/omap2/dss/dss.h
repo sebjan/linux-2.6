@@ -410,7 +410,6 @@ int dispc_set_clock_div(enum omap_channel channel,
 int dispc_get_clock_div(enum omap_channel channel,
 		struct dispc_clock_info *cinfo);
 
-
 /* VENC */
 #ifdef CONFIG_OMAP2_DSS_VENC
 int venc_init_platform_driver(void);

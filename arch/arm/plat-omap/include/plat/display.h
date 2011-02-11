@@ -48,6 +48,16 @@
 #define DISPC_IRQ_ACBIAS_COUNT_STAT2	(1 << 21)
 #define DISPC_IRQ_FRAMEDONE2		(1 << 22)
 
+/*HDMI PLL structure*/
+struct hdmi_pll_info {
+	u16 regn;
+	u16 regm;
+	u32 regmf;
+	u16 regm2;
+	u16 regsd;
+	u16 dcofreq;
+};
+
 struct omap_dss_device;
 struct omap_overlay_manager;
 
@@ -582,5 +592,13 @@ int omap_rfbi_prepare_update(struct omap_dss_device *dssdev,
 int omap_rfbi_update(struct omap_dss_device *dssdev,
 		u16 x, u16 y, u16 w, u16 h,
 		void (*callback)(void *), void *data);
+
+int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev);
+void omapdss_hdmi_compute_pll(int clkin, int phy,
+	int n, struct hdmi_pll_info *pi);
+int omapdss_hdmi_dispc_setting(struct omap_dss_device *dssdev);
+void omapdss_hdmi_display_disable(struct omap_dss_device *dssdev);
+int omapdss_hdmi_display_suspend(struct omap_dss_device *dssdev);
+int omapdss_hdmi_display_resume(struct omap_dss_device *dssdev);
 
 #endif
