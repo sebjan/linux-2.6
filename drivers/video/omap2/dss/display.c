@@ -448,6 +448,9 @@ void dss_init_device(struct platform_device *pdev,
 		r = dsi_init_display(dssdev);
 		break;
 #endif
+	case OMAP_DISPLAY_TYPE_HDMI:
+		r = hdmi_init_display(dssdev);
+		break;
 	default:
 		BUG();
 	}

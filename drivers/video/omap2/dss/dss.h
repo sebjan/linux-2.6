@@ -427,6 +427,25 @@ static inline void venc_uninit_platform_driver(void)
 }
 #endif
 
+/* HDMI */
+#ifdef CONFIG_OMAP2_DSS_HDMI
+int hdmi_init_platform_driver(void);
+void hdmi_uninit_platform_driver(void);
+int hdmi_init_display(struct omap_dss_device *dssdev);
+#else
+static inline int hdmi_init_display(struct omap_dss_device *dssdev)
+{
+	return 0;
+}
+static inline int hdmi_init_platform_driver(void)
+{
+	return 0;
+}
+static inline void hdmi_uninit_platform_driver(void)
+{
+}
+#endif
+
 /* RFBI */
 #ifdef CONFIG_OMAP2_DSS_RFBI
 int rfbi_init_platform_driver(void);
