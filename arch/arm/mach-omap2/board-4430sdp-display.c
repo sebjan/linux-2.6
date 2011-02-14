@@ -23,6 +23,12 @@
 static int sdp4430_panel_enable_hdmi(struct omap_dss_device *dssdev)
 {
 	int status;
+static int once=0;
+
+	if (once > 0)
+		return 0;
+	once++;
+printk(KERN_ERR "sebj - 00 - %d - %s\n", once, __func__);
 
 	/* PAD0_HDMI_HPD_PAD1_HDMI_CEC */
 	omap_mux_init_signal("hdmi_hpd",
@@ -34,28 +40,32 @@ static int sdp4430_panel_enable_hdmi(struct omap_dss_device *dssdev)
 			OMAP_PIN_INPUT_PULLUP);
 	omap_mux_init_signal("hdmi_ddc_sda",
 			OMAP_PIN_INPUT_PULLUP);
-
+printk(KERN_ERR "sebj - 01\n");
 	status = gpio_request(HDMI_GPIO_HPD , "hdmi_gpio_hpd");
 	if (status) {
 		pr_err("Cannot request GPIO %d\n", HDMI_GPIO_HPD);
 		return status;
 	}
+printk(KERN_ERR "sebj - 02\n");
 	status = gpio_request(HDMI_GPIO_LS_OE , "hdmi_gpio_ls_oe");
 	if (status) {
 		pr_err("Cannot request GPIO %d\n", HDMI_GPIO_LS_OE);
 		goto error1;
 	}
+printk(KERN_ERR "sebj - 03\n");
 	status = gpio_direction_output(HDMI_GPIO_HPD, 0);
 	if (status) {
 		pr_err("Cannot set output  GPIO %d\n", HDMI_GPIO_HPD);
 		goto error2;
 	}
+printk(KERN_ERR "sebj - 04\n");
 	status = gpio_direction_output(HDMI_GPIO_LS_OE, 0);
 	if (status) {
 		pr_err("Cannot set output  GPIO %d\n", HDMI_GPIO_LS_OE);
 		goto error2;
 	}
 
+printk(KERN_ERR "sebj - 05\n");
 	/* The value set a pulse */
 	gpio_set_value(HDMI_GPIO_HPD, 1);
 	gpio_set_value(HDMI_GPIO_LS_OE, 1);
@@ -63,6 +73,7 @@ static int sdp4430_panel_enable_hdmi(struct omap_dss_device *dssdev)
 	gpio_set_value(HDMI_GPIO_LS_OE, 0);
 	gpio_set_value(HDMI_GPIO_HPD, 1);
 	gpio_set_value(HDMI_GPIO_LS_OE, 1);
+printk(KERN_ERR "sebj - 06\n");
 
 	return 0;
 

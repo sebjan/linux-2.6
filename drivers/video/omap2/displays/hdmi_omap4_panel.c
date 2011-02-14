@@ -1128,39 +1128,48 @@ static int hdmi_panel_enable(struct omap_dss_device *dssdev)
 	/* the tv overlay manager is shared */
 	if (dssdev->state != OMAP_DSS_DISPLAY_DISABLED)
 		return -EINVAL;
+printk(KERN_ERR "sebj AA - 01\n");
 
 	/* some tv need time to stabilize so delay before enabling */
 	mdelay(50);
+printk(KERN_ERR "sebj AA - 02\n");
 
 	hdmi_wp_video_stop();
+printk(KERN_ERR "sebj AA - 03\n");
 
 	p = &dssdev->panel.timings;
 
 	pr_info("hdmi_panel_enable x_res= %d y_res = %d\n",
 		dssdev->panel.timings.x_res,
 		dssdev->panel.timings.y_res);
+printk(KERN_ERR "sebj AA - 04\n");
 
 	r = omapdss_hdmi_display_enable(dssdev);
+printk(KERN_ERR "sebj AA - 05\n");
 
 	if (r) {
 		pr_info("failed to power on\n");
 		return r;
 	}
+printk(KERN_ERR "sebj AA - 06\n");
 
 	pr_info("No edid set thus will be calling hdmi_read_edid\n");
 	r = hdmi_read_edid(p);
 	if (r)
 		return -EIO;
+printk(KERN_ERR "sebj AA - 07\n");
 
 	code = get_timings_index();
 	dssdev->panel.timings = cea_vesa_timings[code].timings;
 	update_hdmi_timings(&hdmi.cfg, p, code);
+printk(KERN_ERR "sebj AA - 08\n");
 
 	clkin = 3840; /* 38.4 MHz */
 	n = 15; /* this is a constant for our math */
 	phy = p->pixel_clock;
 
 	omapdss_hdmi_compute_pll(clkin, phy, n, &pll_data);
+printk(KERN_ERR "sebj AA - 09\n");
 
 	/* config the PLL and PHY first */
 	r = hdmi_pll_program(&pll_data);
@@ -1168,20 +1177,25 @@ static int hdmi_panel_enable(struct omap_dss_device *dssdev)
 		pr_info("Failed to lock PLL\n");
 		return -EIO;
 	}
+printk(KERN_ERR "sebj AA - 0A\n");
 
 	r = hdmi_phy_init(HDMI_WP, HDMI_PHY);
 	if (r) {
 		pr_info("Failed to start PHY\n");
 		return -EIO;
 	}
+printk(KERN_ERR "sebj AA - 01\n");
 
 	hdmi.cfg.hdmi_dvi = hdmi.mode;
 	hdmi.cfg.video_format = hdmi.code;
 	hdmi_lib_enable(&hdmi.cfg);
+printk(KERN_ERR "sebj AA - 0B\n");
 
 	omapdss_hdmi_dispc_setting(dssdev);
+printk(KERN_ERR "sebj AA - 0C\n");
 
 	hdmi_wp_video_start();
+printk(KERN_ERR "sebj AA - 0D\n");
 
 	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
 
