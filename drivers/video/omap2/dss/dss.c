@@ -559,6 +559,13 @@ void dss_set_dac_pwrdn_bgz(bool enable)
 	REG_FLD_MOD(DSS_CONTROL, enable, 5, 5);	/* DAC Power-Down Control */
 }
 
+void dss_select_hdmi_venc(bool hdmi)
+{
+	REG_FLD_MOD(DSS_CONTROL, hdmi, 15, 15);	/* 0x1 for HDMI, 0x0 VENC */
+	if (hdmi)
+		REG_FLD_MOD(DSS_CONTROL, 0, 9, 8);
+}
+
 static int dss_init(bool skip_init)
 {
 	int r;
