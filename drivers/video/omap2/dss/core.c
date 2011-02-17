@@ -229,6 +229,12 @@ static int omap_dss_probe(struct platform_device *pdev)
 		}
 	}
 
+	r = hdmi_init_platform_driver();
+	if (r) {
+		DSSERR("Failed to initialize hdmi\n");
+		goto err_hdmi;
+	}
+
 	r = dss_initialize_debugfs();
 	if (r)
 		goto err_debugfs;
@@ -258,6 +264,8 @@ static int omap_dss_probe(struct platform_device *pdev)
 err_register:
 	dss_uninitialize_debugfs();
 err_debugfs:
+	hdmi_uninit_platform_driver();
+err_hdmi:
 	if (cpu_is_omap34xx())
 		dsi_uninit_platform_driver();
 err_dsi:
