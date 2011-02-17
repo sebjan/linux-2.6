@@ -30,4 +30,5 @@ extern void __init gic_init_irq(void);
 extern void omap_smc1(u32 fn, u32 arg);
 
 extern void __init omap_4430sdp_display_init(void);
+extern void __init omap_panda_display_init(void);
 #endif

@@ -216,6 +216,7 @@ obj-$(CONFIG_MACH_OMAP_4430SDP)		+= board-4430sdp.o \
 					   hsmmc.o \
 					   omap_phy_internal.o
 obj-$(CONFIG_MACH_OMAP4_PANDA)		+= board-omap4panda.o \
+					   board-omap4panda-display.o \
 					   hsmmc.o \
 					   omap_phy_internal.o
 
