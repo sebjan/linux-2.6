@@ -35,6 +35,7 @@
 #include <plat/common.h>
 #include <plat/usb.h>
 #include <plat/mmc.h>
+#include <plat/display.h>
 
 #include "mux.h"
 #include "hsmmc.h"
@@ -594,6 +595,7 @@ static void __init omap_4430sdp_init(void)
 		spi_register_board_info(sdp4430_spi_board_info,
 				ARRAY_SIZE(sdp4430_spi_board_info));
 	}
+	omap_4430sdp_display_init();
 }
 
 static void __init omap_4430sdp_map_io(void)
