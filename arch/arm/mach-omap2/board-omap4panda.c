@@ -26,6 +26,8 @@
 #include <linux/usb/otg.h>
 #include <linux/i2c/twl.h>
 #include <linux/regulator/machine.h>
+#include <linux/regulator/fixed.h>
+#include <linux/wl12xx.h>
 
 #include <mach/hardware.h>
 #include <mach/omap4-common.h>
@@ -45,6 +47,8 @@
 
 #define GPIO_HUB_POWER		1
 #define GPIO_HUB_NRESET		62
+#define GPIO_WIFI_PMENA		43
+#define GPIO_WIFI_IRQ		53
 
 static struct gpio_led gpio_leds[] = {
 	{
@@ -162,6 +166,15 @@ static struct omap2_hsmmc_info mmc[] = {
 		.gpio_wp	= -EINVAL,
 		.gpio_cd	= -EINVAL,
 	},
+	{
+		.name		= "wl1271",
+		.mmc		= 5,
+		.caps		= MMC_CAP_4_BIT_DATA | MMC_CAP_POWER_OFF_CARD,
+		.gpio_wp	= -EINVAL,
+		.gpio_cd	= -EINVAL,
+		.ocr_mask	= MMC_VDD_165_195,
+		.nonremovable	= true,
+	},
 	{}	/* Terminator */
 };
 
@@ -170,6 +183,43 @@ static struct regulator_consumer_supply omap4_panda_vmmc_supply[] = {
 		.supply = "vmmc",
 		.dev_name = "mmci-omap-hs.0",
 	},
+};
+
+static struct regulator_consumer_supply omap4_panda_vmmc5_supply = {
+	.supply = "vmmc",
+	.dev_name = "mmci-omap-hs.4",
+};
+
+static struct regulator_init_data panda_vmmc5 = {
+	.constraints = {
+		.valid_ops_mask = REGULATOR_CHANGE_STATUS,
+	},
+	.num_consumer_supplies = 1,
+	.consumer_supplies = &omap4_panda_vmmc5_supply,
+};
+
+static struct fixed_voltage_config panda_vwlan = {
+	.supply_name = "vwl1271",
+	.microvolts = 1800000, /* 1.8V */
+	.gpio = GPIO_WIFI_PMENA,
+	.startup_delay = 70000, /* 70msec */
+	.enable_high = 1,
+	.enabled_at_boot = 0,
+	.init_data = &panda_vmmc5,
+};
+
+static struct platform_device omap_vwlan_device = {
+	.name		= "reg-fixed-voltage",
+	.id		= 1,
+	.dev = {
+		.platform_data = &panda_vwlan,
+	},
+};
+
+struct wl12xx_platform_data omap_panda_wlan_data  __initdata = {
+	.irq = OMAP_GPIO_IRQ(GPIO_WIFI_IRQ),
+	/* PANDA ref clock is 38.4 MHz */
+	.board_ref_clock = 2,
 };
 
 static int omap4_twl6030_hsmmc_late_init(struct device *dev)
@@ -349,6 +399,12 @@ static struct regulator_init_data omap4_panda_vusb = {
 	},
 };
 
+static struct regulator_init_data omap4_panda_clk32kg = {
+	.constraints = {
+		.valid_ops_mask		= REGULATOR_CHANGE_STATUS,
+	},
+};
+
 static struct twl4030_platform_data omap4_panda_twldata = {
 	.irq_base	= TWL6030_IRQ_BASE,
 	.irq_end	= TWL6030_IRQ_END,
@@ -364,6 +420,7 @@ static struct twl4030_platform_data omap4_panda_twldata = {
 	.vaux1		= &omap4_panda_vaux1,
 	.vaux2		= &omap4_panda_vaux2,
 	.vaux3		= &omap4_panda_vaux3,
+	.clk32kg	= &omap4_panda_clk32kg,
 	.usb		= &omap4_usbphy_data,
 };
 
@@ -391,6 +448,19 @@ static int __init omap4_panda_i2c_init(void)
 
 #ifdef CONFIG_OMAP_MUX
 static struct omap_board_mux board_mux[] __initdata = {
+	/* WLAN IRQ - GPIO 53 */
+	OMAP4_MUX(GPMC_NCS3, OMAP_MUX_MODE3 | OMAP_PIN_INPUT),
+	/* WLAN POWER ENABLE - GPIO 43 */
+	OMAP4_MUX(GPMC_A19, OMAP_MUX_MODE3 | OMAP_PIN_OUTPUT),
+	/* WLAN SDIO: MMC5 CMD */
+	OMAP4_MUX(SDMMC5_CMD, OMAP_MUX_MODE0 | OMAP_PIN_INPUT_PULLUP),
+	/* WLAN SDIO: MMC5 CLK */
+	OMAP4_MUX(SDMMC5_CLK, OMAP_MUX_MODE0 | OMAP_PIN_INPUT_PULLUP),
+	/* WLAN SDIO: MMC5 DAT[0-3] */
+	OMAP4_MUX(SDMMC5_DAT0, OMAP_MUX_MODE0 | OMAP_PIN_INPUT_PULLUP),
+	OMAP4_MUX(SDMMC5_DAT1, OMAP_MUX_MODE0 | OMAP_PIN_INPUT_PULLUP),
+	OMAP4_MUX(SDMMC5_DAT2, OMAP_MUX_MODE0 | OMAP_PIN_INPUT_PULLUP),
+	OMAP4_MUX(SDMMC5_DAT3, OMAP_MUX_MODE0 | OMAP_PIN_INPUT_PULLUP),
 	{ .reg_offset = OMAP_MUX_TERMINATOR },
 };
 #else
@@ -405,8 +475,12 @@ static void __init omap4_panda_init(void)
 		package = OMAP_PACKAGE_CBL;
 	omap4_mux_init(board_mux, package);
 
+	if (wl12xx_set_platform_data(&omap_panda_wlan_data))
+		pr_err("error setting wl12xx data\n");
+
 	omap4_panda_i2c_init();
 	platform_add_devices(panda_devices, ARRAY_SIZE(panda_devices));
+	platform_device_register(&omap_vwlan_device);
 	omap_serial_init();
 	omap4_twl6030_hsmmc_init(mmc);
 	omap4_ehci_init();
