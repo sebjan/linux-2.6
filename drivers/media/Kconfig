@@ -93,3 +93,7 @@ source "drivers/media/radio/Kconfig"
 source "drivers/media/dvb/Kconfig"
 
 endif # MEDIA_SUPPORT
+
+if MEDIA_SUPPORT || FB
+	source "drivers/media/video/tiler/Kconfig"
+endif
