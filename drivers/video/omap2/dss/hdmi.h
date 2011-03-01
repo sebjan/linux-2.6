@@ -594,4 +594,9 @@ struct hdmi_irq_vector {
 	u8	core;
 };
 
+/* Function prototype */
+int hdmi_wait_softreset(void);
+int read_edid(u8 *pEDID, u16 max_length);
+void hdmi_basic_configure(struct hdmi_config *cfg);
+
 #endif
