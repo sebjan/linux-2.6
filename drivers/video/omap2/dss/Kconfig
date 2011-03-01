@@ -125,4 +125,12 @@ config OMAP2_DSS_MIN_FCK_PER_PCK
 	  Max FCK is 173MHz, so this doesn't work if your PCK
 	  is very high.
 
+config OMAP4_PANEL_HDMI
+	tristate "HDMI panel support"
+	depends on OMAP2_DSS_HDMI
+        default n
+	help
+	  HDMI panel. This adds the High Definition Multimedia panel.
+	  See http://www.hdmi.org/ for HDMI specification.
+
 endif
